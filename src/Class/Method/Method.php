@@ -137,8 +137,8 @@ class Method
         protected ?StatementsBlock $statements = null,
         protected ?string $docblock = null,
         array $returnType = null,
-        protected ?array $expression = [],
-        array $staticVariables = [],
+        protected ?array $expression = [], //对于匿名函数才有的
+        array $staticVariables = [], //对于匿名函数才有的
     ) {
         $this->classDefinition = $classDefinition;
         $this->staticVariables = $staticVariables;
@@ -780,6 +780,10 @@ class Method
      */
     public function compile(CompilationContext $compilationContext): void
     {
+        echo "compile Method ===>", $this->name ,PHP_EOL;
+        if($this->name === 'ccblock'){
+            //var_dump($this->statements);exit();
+        }
         /**
          * Set the method currently being compiled
          */

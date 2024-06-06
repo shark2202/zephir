@@ -336,6 +336,8 @@ class FunctionCall extends Call
     protected function _callNormal(array $expression, CompilationContext $compilationContext)
     {
         $funcName = strtolower($expression['name']);
+        echo '_callNormal====>', $funcName,PHP_EOL;
+        //echo json_encode($expression);exit();
 
         if ('array' == $funcName) {
             throw new CompilerException("Cannot use 'array' as a function call", $expression);
@@ -661,12 +663,14 @@ class FunctionCall extends Call
     protected function optimize($funcName, array $expression, Call $call, CompilationContext $compilationContext)
     {
         $optimizer = false;
-
+        //var_dump($funcName, $expression, $call, $compilationContext);
         /*
          * Check if the optimizer is already cached
          */
         if (!isset(self::$optimizers[$funcName])) {
             $camelizeFunctionName = Name::camelize($funcName);
+
+            echo 'optimize===>', $camelizeFunctionName ,PHP_EOL;
 
             /*
              * Check every optimizer directory for an optimizer

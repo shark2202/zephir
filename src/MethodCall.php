@@ -67,6 +67,9 @@ class MethodCall extends Call
     {
         $expression = $expr->getExpression();
 
+        echo "compile MethodCall ===> ";
+        echo ($expression['name']??'--'), PHP_EOL;
+
         $exprVariable = new Expression($expression['variable']);
         $exprVariable->setReadOnly(true);
         $exprCompiledVariable = $exprVariable->compile($compilationContext);
@@ -117,6 +120,8 @@ class MethodCall extends Call
         $codePrinter = $compilationContext->codePrinter;
 
         $type = $expression['call-type'];
+
+        
 
         /**
          * In normal method calls and dynamic string method calls we just use the name given by the user
@@ -193,6 +198,7 @@ class MethodCall extends Call
         if (isset($expression['check'])) {
             $check = $expression['check'];
         }
+        echo 'check => ', $check, PHP_EOL;
 
         /*
          * Try to check if the method exist in the callee, only when method call is self::CALL_NORMAL
@@ -326,6 +332,7 @@ class MethodCall extends Call
                  */
                 if ($check && $variableVariable->hasAnyDynamicType('object')) {
                     $classTypes = $variableVariable->getClassTypes();
+                    var_dump('classTypes', $classTypes);
 
                     if (count($classTypes)) {
                         $numberImplemented = 0;
@@ -875,6 +882,9 @@ class MethodCall extends Call
         } else {
             $classTypes = $caller->getClassTypes();
             foreach ($classTypes as $classType) {
+                //echo 'getRealCalledMethod===>', $classType ,PHP_EOL;
+                //echo 'isBundledClass ===>', $compiler->isBundledClass($classType), PHP_EOL;
+
                 if ($compiler->isInterface($classType)) {
                     continue;
                 }
@@ -884,9 +894,9 @@ class MethodCall extends Call
                     $compiler->isBundledClass($classType) ||
                     $compiler->isBundledInterface($classType)
                 ) {
-                    if ($compiler->isClass($classType)) {
+                    if ($compiler->isClass($classType)) {//扩展内定义的
                         $classDefinition = $compiler->getClassDefinition($classType);
-                    } else {
+                    } else {//扩展外定义的
                         $classDefinition = $compiler->getInternalClassDefinition($classType);
                     }
 

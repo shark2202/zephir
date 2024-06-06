@@ -107,7 +107,7 @@ class StaticCall extends Call
             $classDefinition = false;
 
             if (!in_array($className, ['self', 'static', 'parent'])) {
-                if (is_string($className)) {
+                if (is_string($className)) { //类名字
                     $className = $compilationContext->getFullName($className);
                     if ($compiler->isClass($className)) {
                         $classDefinition = $compiler->getClassDefinition($className);
@@ -115,7 +115,10 @@ class StaticCall extends Call
                         if ($compiler->isBundledClass($className)) {
                             $classDefinition = $compiler->getInternalClassDefinition($className);
                         } else {
-                            throw new CompilerException('Class name: ' . $className . ' does not exist', $expression);
+                            $compilationContext->logger->warning(
+                                'Class name: ' . $className . ' does not exist', $expression
+                            );
+                            //throw new CompilerException('Class name: ' . $className . ' does not exist', $expression);
                         }
                     }
                 } else {
@@ -124,7 +127,10 @@ class StaticCall extends Call
                         if ($compiler->isClass($singleClass)) {
                             $classDefinition = $compiler->getClassDefinition($singleClass);
                         } else {
-                            throw new CompilerException('Class name: ' . $className . ' does not exist', $expression);
+                            //throw new CompilerException('Class name: ' . $className . ' does not exist', $expression);
+                            $compilationContext->logger->warning(
+                                'Class name: ' . $className . ' does not exist', $expression
+                            );
                         }
                     }
                 }
@@ -155,7 +161,10 @@ class StaticCall extends Call
         if (!$dynamicMethod && !$dynamicClass) {
             // TODO: Consider to check instance of ClassDefinitionRuntime and throw another error, telling that class was not found.
             // TODO: This will give false if external class does not exists!
-            if (!$classDefinition->hasMethod($methodName)) {
+            if(empty($classDefinition)){
+                //empty
+            }
+            elseif (!$classDefinition->hasMethod($methodName)) {
                 $possibleMethod = $classDefinition->getPossibleMethodName($methodName);
                 if ($possibleMethod) {
                     throw new CompilerException(
@@ -294,13 +303,16 @@ class StaticCall extends Call
                             $method ?? null
                         );
                     } else {
+                        if(empty($classDefinition)){
+                            $className = $compilationContext->getFullName($expression['class']);
+                        }
                         $this->callFromClass(
                             $methodName,
                             $expression,
                             $symbolVariable,
                             $mustInit,
                             $isExpecting,
-                            $classDefinition,
+                            $classDefinition ? $classDefinition : $className,
                             $compilationContext,
                             $method ?? null
                         );
@@ -482,13 +494,24 @@ class StaticCall extends Call
         $symbolVariable,
         $mustInit,
         $isExpecting,
-        Definition $classDefinition,
+        /*Definition*/ $classDefinition,
         CompilationContext $compilationContext,
-        Method $method
+        /*Method*/ $method
     ): void {
         $codePrinter = $compilationContext->codePrinter;
-
-        if ($classDefinition->isBundled()) {
+        
+        if(is_string($classDefinition)){
+            $className = $classDefinition;
+            $classEntryVariable = $compilationContext->symbolTable->addTemp('zend_class_entry', $compilationContext);
+            $compilationContext->backend->fetchClass(
+                $classEntryVariable,
+                'SL("' . str_replace('\\', '\\\\', $className) . '")',
+                false,
+                $compilationContext
+            );
+            $classEntry = $classEntryVariable->getName();
+        }
+        elseif ($classDefinition->isBundled()) {
             $classEntryVariable = $compilationContext->symbolTable->addTemp('zend_class_entry', $compilationContext);
             $compilationContext->backend->fetchClass(
                 $classEntryVariable,

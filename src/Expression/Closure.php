@@ -61,9 +61,10 @@ class Closure
      */
     public function compile(array $expression, CompilationContext $compilationContext): CompiledExpression
     {
+        echo "closure ===>",PHP_EOL;
         $classDefinition = new Definition(
             $compilationContext->config->get('namespace'),
-            self::$id . '__closure'
+            self::$id . '__closure' //动态生成一个名字的
         );
 
         $classDefinition->setIsFinal(true);

@@ -275,6 +275,7 @@ final class Definition extends AbstractDefinition
         }
 
         foreach ($class->getConstants() as $constantName => $constantValue) {
+            echo $class->getName(), ' ====> ', $constantName, ' ===>' , gettype($constantValue),  PHP_EOL;
             $type          = self::convertPhpConstantType(gettype($constantValue));
             $classConstant = new Constant($constantName, ['value' => $constantValue, 'type' => $type], null);
             $classDefinition->addConstant($classConstant);
@@ -477,6 +478,7 @@ final class Definition extends AbstractDefinition
         }
 
         $initMethod = $this->getInitMethod();
+        //echo "initMethod", json_encode($initMethod);
         if ($initMethod) {
             $codePrinter->output(
                 $namespace . '_' . strtolower(
@@ -1412,6 +1414,7 @@ final class Definition extends AbstractDefinition
             'double'  => 'double',
             'string'  => 'string',
             'NULL'    => 'null',
+            'array'   => 'array',
         ];
 
         if (!isset($map[$phpType])) {

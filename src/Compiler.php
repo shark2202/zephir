@@ -947,7 +947,7 @@ final class Compiler
         foreach ($rankedFiles as $rankFiles) {
             $files = array_merge($files, $rankFiles);
         }
-        $this->files = $files;
+        $this->files = $files;//按照依赖关系重新排序的
 
         /**
          * Convert C-constants into PHP constants.
@@ -971,6 +971,7 @@ final class Compiler
         if (false === self::$loadedPrototypes) {
             $optimizersPath = $this->resolveOptimizersPath();
             FunctionCall::addOptimizerDir("{$optimizersPath}/FunctionCall");
+            var_dump("{$optimizersPath}/FunctionCall");
 
             $customOptimizersPaths = $this->config->get('optimizer-dirs');
             if (is_array($customOptimizersPaths)) {
@@ -983,6 +984,7 @@ final class Compiler
              * Load additional extension prototypes.
              */
             $prototypesPath = $this->resolvePrototypesPath();
+            var_dump($prototypesPath);//原型就是依赖的是比别的的扩展的
             foreach (new DirectoryIterator($prototypesPath) as $file) {
                 if ($file->isDir() || $file->isDot()) {
                     continue;
@@ -2096,6 +2098,7 @@ final class Compiler
 
             $className = implode('\\', array_map('ucfirst', explode('\\', $className)));
 
+            echo $className, '===>', $filePath, PHP_EOL;
             $compilerFile = $this->compilerFileFactory->create($className, $filePath);
             $compilerFile->preCompile($this);
 

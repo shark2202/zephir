@@ -104,6 +104,8 @@ class Expression
      */
     public function compile(CompilationContext $compilationContext): CompiledExpression
     {
+        echo 'expression compile ===>', ($this->expression['type']??'---'), PHP_EOL;
+
         $expression = $this->expression;
         $type       = $expression['type'];
 

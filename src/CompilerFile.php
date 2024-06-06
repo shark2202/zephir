@@ -181,7 +181,7 @@ final class CompilerFile implements FileInterface
     {
         $classDefinition = $this->classDefinition;
 
-        $extendedClass = $classDefinition->getExtendsClass();
+        $extendedClass = $classDefinition->getExtendsClass();//需要外部的类，实际上是对应的外部的文件
         if ($extendedClass) {
             if ('class' == $classDefinition->getType()) {
                 if ($compiler->isClass($extendedClass)) {
@@ -448,6 +448,7 @@ final class CompilerFile implements FileInterface
 
         $codePrinter = $compilationContext->codePrinter;
         $codePrinter->output('PHP_FUNCTION(' . $functionDefinition->getInternalName() . ') {');
+        echo $functionDefinition->getInternalName(), PHP_EOL;
         $functionDefinition->compile($compilationContext);
         $codePrinter->output('}');
         $codePrinter->outputBlankLine();
@@ -544,7 +545,8 @@ final class CompilerFile implements FileInterface
      */
     public function preCompile(Compiler $compiler): void
     {
-        $ir = $this->genIR($compiler);
+        $ir = $this->genIR($compiler); //编译zep文件到中间形式的
+        //var_dump($ir);
 
         if (isset($ir['type']) && 'error' == $ir['type']) {
             throw new ParseException($ir['message'], $ir);
@@ -564,7 +566,7 @@ final class CompilerFile implements FileInterface
          * Traverse the top level statements looking for the namespace.
          */
         $namespace = '';
-
+//echo json_encode(array_values($ir));exit();
         foreach ($ir as $topStatement) {
             switch ($topStatement['type']) {
                 case 'namespace':
@@ -582,10 +584,13 @@ final class CompilerFile implements FileInterface
                         );
                     }
 
+                    echo $this->filePath, '@namespace ===>', $namespace,PHP_EOL;
                     break;
 
                 case 'cblock':
                     $this->headerCBlocks[] = $topStatement['value'];
+
+                    echo $this->filePath, '@cblock ===>',PHP_EOL;
                     break;
 
                 case 'function':
@@ -613,7 +618,11 @@ final class CompilerFile implements FileInterface
                         $returnType,
                         $topStatement
                     );
+
+                    echo $this->filePath, '@function ===>', $topStatement['name'] ,PHP_EOL;
                     $functionDefinition->preCompile($compilationContext);
+
+                    //添加函数的定义到当前的文件中
                     $this->addFunction($compiler, $functionDefinition, $topStatement);
                     break;
             }
@@ -758,6 +767,7 @@ final class CompilerFile implements FileInterface
             $classDefinition->setDocBlock($docblock['value']);
         }
 
+        //类定义的细节
         if (isset($topStatement['definition'])) {
             $definition = $topStatement['definition'];
 
@@ -805,6 +815,7 @@ final class CompilerFile implements FileInterface
              * Register methods
              */
             if (isset($definition['methods'])) {
+                //print_r($definition['methods']);//exit();
                 foreach ($definition['methods'] as $method) {
                     $classDefinition->addMethod(
                         new Method(

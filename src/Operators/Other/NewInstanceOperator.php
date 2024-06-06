@@ -75,6 +75,7 @@ class NewInstanceOperator extends AbstractOperator
          */
         $symbolVariable->setDynamicTypes('object');
 
+        echo "new Object ====>", $expression['class'], PHP_EOL;
         $dynamic = false;
         if ('self' == $expression['class'] || 'static' == $expression['class']) {
             $className = $compilationContext->classDefinition->getCompleteName();
@@ -169,6 +170,7 @@ class NewInstanceOperator extends AbstractOperator
                     $compilationContext->codePrinter->decreaseLevel();
                     $compilationContext->codePrinter->output('}');
                 } else {
+                    //编译时可以不存在的
                     if (!class_exists($className, false)) {
                         $compilationContext->logger->warning(
                             'Class "' . $className . '" does not exist at compile time',
